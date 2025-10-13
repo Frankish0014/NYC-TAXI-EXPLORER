@@ -91,9 +91,7 @@ CREATE TABLE hourly_statistics (
     UNIQUE KEY unique_pickup_hour (pickup_hour)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ============================================
 -- VIEWS for common queries
--- ============================================
 
 -- View: Trips by hour
 CREATE OR REPLACE VIEW trips_by_hour AS
