@@ -1,0 +1,4 @@
+*.csv--include-ref=refs/heads/main filter=lfs diff=lfs merge=lfs -text
+train/train.csv filter=lfs diff=lfs merge=lfs -text
+data/raw/processed/cleaned_data.csv filter=lfs diff=lfs merge=lfs -text
+train/taxi_zone_lookup.csv filter=lfs diff=lfs merge=lfs -text
