@@ -1,4 +1,4 @@
--- Active: 1742995569032@@ffaec7ef89e6.d569d670.alu-cod.online@36834
+-- Active: 1742995569032@@ffaec7ef89e6.d569d670.alu-cod.online@36834 
 -- Database schema for NYC Taxi Explorer
 -- This schema defines the structure of the database tables
 -- used to store and analyze NYC taxi trip data.
@@ -162,7 +162,7 @@ ORDER BY
 
 -- View: Time period analysis
 CREATE OR REPLACE VIEW time_period_analysis AS
-SELECT 
+SELECT
     time_period,
     COUNT(*) as trip_count,
     AVG(trip_duration) as avg_duration_seconds,
@@ -191,4 +191,4 @@ SELECT
     AVG(t.passenger_count) as avg_passengers
 FROM vendors v
 LEFT JOIN nyc_taxi_trips t ON v.vendor_id = t.vendor_id
-GROUP BY v.vendor_id, v.vendor_name;
+GROUP BY v.vendor_id, v.vendor_name; 
