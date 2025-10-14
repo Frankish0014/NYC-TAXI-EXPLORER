@@ -118,7 +118,7 @@ nyc-taxi-explorer/
 CONFIGURATIO
 .env file settings
 
-# Darabase
+# Database
 DB_HOST = localhost
 DB_PORT = 8000
 DB_NAME = nyc_taxi_db
@@ -193,9 +193,9 @@ Performance optimizations with caching
 
 Team Members
 
-[Name] - Backend & Database
-[Name] - Frontend & Visualizations
-[Name] - Data Processing & Analysis
+Frank Ishimwe - Backend & Database
+Tifare and Gloria- Frontend & Visualizations
+Imanzi Kenny- Data Processing & Analysis
 
 Support 
 For questions issues
@@ -213,4 +213,4 @@ All api endpoints working
 Video walkthrough recorded
 Documentation Complete
 All link tested and working
-Code runs successfully on frsh set up
+Code runs successfully on fresh set up
