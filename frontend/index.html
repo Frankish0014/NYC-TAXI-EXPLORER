@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Urban Mobility Data Explorer</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Urban Mobility Data Explorer</h1>
+    <p class="subtitle">NYC Taxi – Interactive dashboard connected to your API</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Filters</h2>
+      <div class="filters-grid">
+        <div class="field">
+          <label>Start Date</label>
+          <input type="date" id="startDate"/>
+        </div>
+        <div class="field">
+          <label>End Date</label>
+          <input type="date" id="endDate"/>
+        </div>
+        <div class="field">
+          <label>Vendor</label>
+          <select id="vendorId">
+            <option value="">Any</option>
+            <option value="1">Vendor 1</option>
+            <option value="2">Vendor 2</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Passengers</label>
+          <input type="number" min="1" max="6" id="passengerCount" placeholder="e.g. 1"/>
+        </div>
+        <div class="field">
+          <label>Min Speed (km/h)</label>
+          <input type="number" min="0" id="minSpeed" placeholder="0"/>
+        </div>
+        <div class="field">
+          <label>Max Speed (km/h)</label>
+          <input type="number" min="0" id="maxSpeed" placeholder="120"/>
+        </div>
+        <div class="field">
+          <label>BBox (west,south,east,north)</label>
+          <input type="text" id="bbox" placeholder="-74.00,40.70,-73.95,40.78"/>
+        </div>
+      </div>
+      <div class="filter-actions">
+        <button id="applyFilters">Apply Filters</button>
+        <button id="resetFilters" class="secondary">Reset</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>KPIs</h2>
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi"><div class="kpi-label">Total Rows</div><div class="kpi-value" id="kpiTotal">—</div></div>
+        <div class="kpi"><div class="kpi-label">Avg Speed (km/h)</div><div class="kpi-value" id="kpiAvgSpeed">—</div></div>
+        <div class="kpi"><div class="kpi-label">Avg Distance (km)</div><div class="kpi-value" id="kpiAvgDist">—</div></div>
+        <div class="kpi"><div class="kpi-label">Date Summary</div><div class="kpi-value" id="kpiDate">—</div></div>
+      </div>
+      <div class="date-summary">
+        <input type="date" id="summaryDate"/>
+        <button id="loadSummary">Load Day Summary</button>
+        <div id="summaryOutput"></div>
+      </div>
+    </section>
+
+    <section class="panel two-col">
+      <div>
+        <h2>Trips by Hour</h2>
+        <canvas id="hourlyChart"></canvas>
+      </div>
+      <div>
+        <h2>Avg Speed by Weekday</h2>
+        <canvas id="weekdayChart"></canvas>
+      </div>
+    </section>
+
+    <section class="panel two-col">
+      <div>
+        <h2>Slowest Hours (sec/km)</h2>
+        <canvas id="slowChart"></canvas>
+      </div>
+      <section class="panel">
+  <h2>D3: Trips by Hour</h2>
+  <div id="d3-hourly" style="width:100%;height:360px;"></div>
+</section>
+
+<!-- load after d3 -->
+<script src="js/visualization.js"></script>
+      <div>
+        <h2>Map – Nearby Pickups</h2>
+        <div id="map"></div>
+        <div class="map-controls">
+          <label>Lat</label><input id="nearLat" type="number" step="0.0001" value="40.7580"/>
+          <label>Lon</label><input id="nearLon" type="number" step="0.0001" value="-73.9855"/>
+          <label>Radius (m)</label><input id="nearRadius" type="number" value="1000"/>
+          <button id="loadNear">Search</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Trips (Paginated)</h2>
+      <div id="tripList"></div>
+      <div class="pagination">
+        <button id="prevPage">Prev</button>
+        <span id="pageInfo">Page 1</span>
+        <button id="nextPage">Next</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <small>© Urban Mobility Data Explorer</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
