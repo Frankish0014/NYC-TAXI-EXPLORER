@@ -1,0 +1,263 @@
+
+/* ---------- 1. Theme Variables ---------- */
+:root {
+  --bg: #0b0f1a;        /* main background */
+  --bg-2: #0f1530;      /* darker secondary panels */
+  --panel: #11172a;     /* card panels */
+  --border: #243056;    /* subtle border color */
+  --text: #e7ecff;      /* main text color */
+  --muted: #a9b4d0;     /* secondary text */
+  --accent: #8aa9ff;    /* blue accent */
+  --chip: #1b2440;      /* small KPI or card background */
+  --shadow: 0 10px 30px rgba(0, 0, 0, .35); /* soft shadow */
+  --radius: 16px;       /* corner rounding */
+}
+
+/* ---------- 2. Base Layout ---------- */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at 80% -200px, #17213f44, transparent 60%),
+    radial-gradient(900px 500px at -50% -200px, #24305644, transparent 65%),
+    var(--bg);
+}
+
+/* ---------- 3. Header ---------- */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: 22px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(6, 10, 22, .9), rgba(6, 10, 22, .65));
+  backdrop-filter: blur(8px);
+}
+
+h1 {
+  margin: 0 0 4px 0;
+  font-size: 28px;
+  letter-spacing: 0.2px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* ---------- 4. Panels & Containers ---------- */
+main {
+  max-width: 1200px;
+  margin: 22px auto;
+  padding: 0 16px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+/* Responsive layout for 2-column sections */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 960px) {
+  .two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------- 5. Filters & Inputs ---------- */
+.filters-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 960px) {
+  .filters-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+input,
+select,
+button {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 10px;
+  outline: none;
+}
+
+input::placeholder {
+  color: #7e8bb0;
+}
+
+button {
+  cursor: pointer;
+  transition: transform .06s ease, background .2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* Primary action button */
+#applyFilters {
+  background: linear-gradient(180deg, #4d69f7, #3e57d8);
+  border: none;
+}
+
+#applyFilters:hover {
+  filter: brightness(1.05);
+}
+
+/* Secondary button */
+.secondary {
+  background: #0b0f1a;
+}
+
+/* ---------- 6. KPI Cards ---------- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 960px) {
+  .kpi-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.kpi {
+  background: var(--chip);
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.kpi-label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.kpi-value {
+  font-weight: 800;
+  font-size: 22px;
+  margin-top: 6px;
+}
+
+/* ---------- 7. Charts & Data Visualizations ---------- */
+canvas {
+  background: #0c1226;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+/* ---------- 8. Map Container ---------- */
+#map {
+  height: 340px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.map-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+/* ---------- 9. Trip List Cards ---------- */
+#tripList {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+
+.trip {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.trip-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.trip-row b {
+  color: var(--text);
+}
+
+/* ---------- 10. Pagination ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: flex-end;
+}
+
+/* ---------- 11. Footer ---------- */
+footer {
+  padding: 20px;
+  text-align: center;
+  color: #8391b3;
+}
+
+/* ---------- 12. Observable Embed Wrapper ---------- */
+.obs-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
