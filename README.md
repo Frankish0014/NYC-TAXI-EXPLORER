@@ -194,7 +194,7 @@ Performance optimizations with caching
 Team Members
 
 Frank Ishimwe - Backend & Database
-Tifare and Gloria- Frontend & Visualizations
+Tifare Kaseke and Gloria Muhoracyeye- Frontend & Visualizations
 Imanzi Kenny- Data Processing & Analysis
 
 Support 
