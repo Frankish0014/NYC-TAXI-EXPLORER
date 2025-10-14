@@ -1,0 +1,27 @@
+﻿# Database
+nyc_taxi.db
+*.db
+
+# Dataset files
+data/raw/train.csv
+data/raw/*.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
