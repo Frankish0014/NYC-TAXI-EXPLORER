@@ -1,6 +1,4 @@
-const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-  ? 'http://localhost:3001'
-  : 'http://localhost:3001'; // adjust if backend runs elsewhere
+const API_BASE = 'http://localhost:5000'; // adjust if backend runs elsewhere
 
 // DOM
 const el = (id)=>document.getElementById(id);
@@ -69,13 +67,13 @@ async function loadSummary(){
       kpiDate.textContent = '—';
       return;
     }
-    summaryOutput.innerHTML = \`
-      <div class="trip-row"><b>Date:</b> \${data.date}</div>
-      <div class="trip-row"><b>Trips:</b> \${data.trips?.toLocaleString()}</div>
-      <div class="trip-row"><b>Avg Speed (km/h):</b> \${data.avg_speed_kmh}</div>
-      <div class="trip-row"><b>Avg Distance (km):</b> \${data.avg_distance_km}</div>
-      <div class="trip-row"><b>Avg Duration (min):</b> \${data.avg_duration_min}</div>
-    \`;
+    summaryOutput.innerHTML = `
+      <div class="trip-row"><b>Date:</b> ${data.date}</div>
+      <div class="trip-row"><b>Trips:</b> ${data.trips?.toLocaleString()}</div>
+      <div class="trip-row"><b>Avg Speed (km/h):</b> ${data.avg_speed_kmh}</div>
+      <div class="trip-row"><b>Avg Distance (km):</b> ${data.avg_distance_km}</div>
+      <div class="trip-row"><b>Avg Duration (min):</b> ${data.avg_duration_min}</div>
+    `;
     kpiDate.textContent = data.date;
   }catch(e){
     summaryOutput.textContent = 'Error loading summary';
@@ -92,7 +90,9 @@ async function loadCharts(){
     const ctxH = document.getElementById('hourlyChart');
     const labelsH = hourly.map(x=>x.pickup_hour);
     const dataH = hourly.map(x=>x.trips);
-    if (hourlyChart) hourlyChart.destroy();
+    // Destroy any existing chart instance on this canvas
+    const existingH = Chart.getChart(ctxH);
+    if (existingH) existingH.destroy();
     hourlyChart = new Chart(ctxH, {
       type:'bar',
       data:{ labels: labelsH, datasets:[{ label:'Trips', data: dataH }]},
@@ -102,7 +102,8 @@ async function loadCharts(){
     const ctxW = document.getElementById('weekdayChart');
     const labelsW = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const dataW = weekday.map(x=>x.avg_speed_kmh);
-    if (weekdayChart) weekdayChart.destroy();
+    const existingW = Chart.getChart(ctxW);
+    if (existingW) existingW.destroy();
     weekdayChart = new Chart(ctxW, {
       type:'bar',
       data:{ labels: labelsW, datasets:[{ label:'Avg Speed (km/h)', data: dataW }]},
@@ -112,7 +113,8 @@ async function loadCharts(){
     const ctxS = document.getElementById('slowChart');
     const labelsS = slow.map(x=>x.pickup_hour);
     const dataS = slow.map(x=>x.avg_sec_per_km);
-    if (slowChart) slowChart.destroy();
+    const existingS = Chart.getChart(ctxS);
+    if (existingS) existingS.destroy();
     slowChart = new Chart(ctxS, {
       type:'line',
       data:{ labels: labelsS, datasets:[{ label:'Sec per km', data: dataS }]},
@@ -128,9 +130,14 @@ let currentFilters = {};
 
 async function loadTrips(page=1){
   currentPage = page;
+  const sortBy = el('sortBy')?.value || 'pickup_datetime';
+  const sortOrder = el('sortOrder')?.value || 'desc';
+  
   const params = {
     page,
     pageSize: 20,
+    sortBy,
+    sortOrder,
     start: startDate.value || undefined,
     end: endDate.value || undefined,
     vendorId: vendorId.value || undefined,
@@ -144,35 +151,46 @@ async function loadTrips(page=1){
   try{
     const data = await fetchJSON(url);
     renderTrips(data);
+    
+    // Show filter status
+    const statusEl = el('filterStatus');
+    if (statusEl) {
+      statusEl.textContent = `Sorted by ${sortBy} (${sortOrder}) | Using custom QuickSort algorithm`;
+    }
   }catch(e){
     console.error(e);
+    const statusEl = el('filterStatus');
+    if (statusEl) {
+      statusEl.textContent = 'Error loading trips';
+      statusEl.style.color = 'red';
+    }
   }
 }
 
 function renderTrips(payload){
-  pageInfo.textContent = \`Page \${payload.page} of \${Math.ceil(payload.total / payload.pageSize)} (Total: \${payload.total.toLocaleString()})\`;
+  pageInfo.textContent = `Page ${payload.page} of ${Math.ceil(payload.total / payload.pageSize)} (Total: ${payload.total.toLocaleString()})`;
   tripList.innerHTML = '';
   payload.data.forEach(t=>{
     const div = document.createElement('div');
     div.className = 'trip';
-    div.innerHTML = \`
-      <div class="trip-row"><b>ID:</b> \${t.id}</div>
+    div.innerHTML = `
+      <div class="trip-row"><b>ID:</b> ${t.id}</div>
       <div class="trip-row">
-        <div><b>Pickup:</b> \${t.pickup_datetime}</div>
-        <div><b>Dropoff:</b> \${t.dropoff_datetime}</div>
+        <div><b>Pickup:</b> ${t.pickup_datetime}</div>
+        <div><b>Dropoff:</b> ${t.dropoff_datetime}</div>
       </div>
       <div class="trip-row">
-        <div><b>Passengers:</b> \${t.passenger_count}</div>
-        <div><b>Vendor:</b> \${t.vendor_id}</div>
-        <div><b>Speed (km/h):</b> \${Number(t.speed_kmh).toFixed(1)}</div>
-        <div><b>Distance (km):</b> \${Number(t.distance_km).toFixed(2)}</div>
-        <div><b>Duration (s):</b> \${t.trip_duration}</div>
+        <div><b>Passengers:</b> ${t.passenger_count}</div>
+        <div><b>Vendor:</b> ${t.vendor_id}</div>
+        <div><b>Speed (km/h):</b> ${Number(t.speed_kmh).toFixed(1)}</div>
+        <div><b>Distance (km):</b> ${Number(t.distance_km).toFixed(2)}</div>
+        <div><b>Duration (s):</b> ${t.trip_duration}</div>
       </div>
       <div class="trip-row">
-        <div><b>Pickup:</b> [\${t.pickup_latitude}, \${t.pickup_longitude}]</div>
-        <div><b>Dropoff:</b> [\${t.dropoff_latitude}, \${t.dropoff_longitude}]</div>
+        <div><b>Pickup:</b> [${t.pickup_latitude}, ${t.pickup_longitude}]</div>
+        <div><b>Dropoff:</b> [${t.dropoff_latitude}, ${t.dropoff_longitude}]</div>
       </div>
-    \`;
+    `;
     tripList.appendChild(div);
   });
 }
@@ -181,6 +199,8 @@ function attachEvents(){
   applyBtn.addEventListener('click', ()=> loadTrips(1));
   resetBtn.addEventListener('click', ()=> {
     [startDate, endDate, vendorId, passengerCount, minSpeed, maxSpeed, bbox].forEach(i=> i.value='');
+    if (el('sortBy')) el('sortBy').value = 'pickup_datetime';
+    if (el('sortOrder')) el('sortOrder').value = 'desc';
     loadTrips(1);
   });
   prevPage.addEventListener('click', ()=>{
@@ -191,6 +211,14 @@ function attachEvents(){
   });
   loadSummaryBtn.addEventListener('click', loadSummary);
   el('loadNear').addEventListener('click', loadNear);
+  
+  // Add sort change listeners
+  if (el('sortBy')) {
+    el('sortBy').addEventListener('change', ()=> loadTrips(1));
+  }
+  if (el('sortOrder')) {
+    el('sortOrder').addEventListener('change', ()=> loadTrips(1));
+  }
 }
 
 function initMap(){
@@ -212,7 +240,7 @@ async function loadNear(){
     markersLayer.clearLayers();
     payload.data.forEach(row=>{
       const m = L.circleMarker([row.pickup_latitude, row.pickup_longitude], { radius: 4 });
-      m.bindPopup(\`<b>\${row.id}</b><br/>\${row.pickup_datetime}<br/>\${(row.meters_away).toFixed(0)} m away\`);
+      m.bindPopup(`<b>${row.id}</b><br/>${row.pickup_datetime}<br/>${(row.meters_away).toFixed(0)} m away`);
       markersLayer.addLayer(m);
     });
     map.setView([lat, lon], 14);
@@ -227,4 +255,4 @@ async function loadNear(){
   await loadKPIs();
   await loadCharts();
   await loadTrips(1);
-})(); 
+})();
