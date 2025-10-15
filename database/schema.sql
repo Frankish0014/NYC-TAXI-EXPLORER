@@ -1,4 +1,4 @@
--- Active: 1742995569032@@ffaec7ef89e6.d569d670.alu-cod.online@36834 
+
 -- Database schema for NYC Taxi Explorer
 -- This schema defines the structure of the database tables
 -- used to store and analyze NYC taxi trip data.
@@ -60,8 +60,8 @@ CREATE TABLE vendors (
 
 -- Sample data for vendors
 INSERT INTO vendors (vendor_id, vendor_name) VALUES 
-('1', 'Frank Ishimwe'),
-('2', 'Kenny Manzi');
+('1', 'Vendor-2'),
+('2', 'Vendor-2');
 
 
 -- Trip statistics table (overall aggregates)

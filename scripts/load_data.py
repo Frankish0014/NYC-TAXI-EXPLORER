@@ -16,7 +16,7 @@ DB_CONFIG = {
     'port': int(os.getenv('DB_PORT', 3306)),  
     'database': os.getenv('DB_NAME', 'nyc_taxi_db'),
     'user': os.getenv('DB_USER', 'frank'),
-    'password': os.getenv('DB_PASSWORD')
+    'password': os.getenv('DB_PASSWORD', '')
 }
 
 #Feature Engineering
@@ -62,6 +62,7 @@ def prepare_data(df):
 
     # Ensure datetime conversion
     df['dropoff_datetime'] = pd.to_datetime(df['dropoff_datetime'], errors='coerce')
+    
     if df['dropoff_datetime'].isna().any():
         print("Warning: Some dropoff_datetime values could not be parsed and will be NaT")
 
@@ -77,7 +78,7 @@ def prepare_data(df):
         lambda row: calculate_speed(row['trip_distance_miles'], row['trip_duration']),
         axis=1
     )
-
+    
     # Categories
     df['distance_category'] = df['trip_distance_miles'].apply(get_distance_category)
     df['duration_category'] = df['trip_duration'].apply(get_duration_category)
@@ -86,11 +87,17 @@ def prepare_data(df):
     return df
 
 #Database Load
-def load_data_to_db(df, batch_size=100000000):
+def load_data_to_db(df, DB_CONFIG, batch_size=10000):
     """Load data into MySQL database in batches"""
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
+        
+        # make the datetime compatible to string formate for mysql compatibility
+        
+        if 'dropoff_datetime' in df.columns:
+            df['dropoff_datetime'] = pd.to_datetime(df['dropoff_datetime'], errors='coerce')
+            df['dropoff_datetime'] = df['dropoff_datetime'].dt.strftime('%Y-%m-%d %H:%M:%S')
 
         insert_query = """
         INSERT INTO nyc_taxi_trips (
@@ -114,7 +121,7 @@ def load_data_to_db(df, batch_size=100000000):
                     int(row['passenger_count']),
                     float(row['pickup_longitude']),
                     float(row['pickup_latitude']),
-                    int(row.get('rate_code_id', 1)),  # default 1
+                    int(row.get('rate_code_id', 1)),
                     str(row['store_and_fwd_flag']),
                     int(row['trip_duration']),
                     float(row['trip_distance_miles']),
@@ -131,7 +138,7 @@ def load_data_to_db(df, batch_size=100000000):
                 print(f"Skipping row due to error: {e}")
 
         total_records = len(data)
-        print(f"\nInserting {total_records} records in batches of {batch_size}...")
+        print(f"\n Inserting {total_records} records in batches of {batch_size}...")
 
         for i in range(0, total_records, batch_size):
             batch = data[i:i + batch_size]
@@ -308,7 +315,7 @@ if __name__ == "__main__":
     df_prepared = prepare_data(df)
 
     print("\n[3/6] Loading data to database...")
-    load_data_to_db(df_prepared)
+    load_data_to_db(df_prepared, DB_CONFIG)
 
     print("\n[4/6] Updating vendor statistics...")
     update_vendor_stats()
