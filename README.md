@@ -4,7 +4,7 @@
 
 A full-stack application for exploring and analyzing NYC taxi trip patterns
 
-## 📹 Video Walkthrough
+## Video Walkthrough
 
 **[Link to 5-minute Video Demo]**: [INSERT YOUR VIDEO LINK HERE]
 
@@ -67,7 +67,7 @@ This project processes and visualizes real-world NYC Taxi Trip data to reveal ur
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### `trips` Table
 | Column | Type | Description | Index |
@@ -429,6 +429,3 @@ NYC-TAXI-EXPLORER/
 - Kenny IMANZI
 - Tifare KASEKE
 
-
-
-**Note**: This README is comprehensive and complete. All commands have been tested and verified to work on Windows, macOS, and Linux systems.
