@@ -10,7 +10,7 @@
 -- Main trips table
 CREATE TABLE nyc_taxi_trips (
     id VARCHAR(50) PRIMARY KEY,
-    vendor_id VARCHAR(10) NOT NULL FOREIGN KEY,
+    vendor_id VARCHAR(10) NOT NULL,
     dropoff_datetime TIMESTAMP NOT NULL,
     passenger_count INT NOT NULL,
     pickup_longitude FLOAT NOT NULL,
@@ -19,23 +19,23 @@ CREATE TABLE nyc_taxi_trips (
     store_and_fwd_flag VARCHAR(5) NOT NULL,
     trip_duration INTEGER NOT NULL CHECK (trip_duration > 0),
     trip_distance_miles FLOAT NOT NULL CHECK (trip_distance_miles >= 0),
-    
-    -- Derived features (computed during insertion)
+
+    -- Derived features
     pickup_hour INTEGER CHECK (pickup_hour BETWEEN 0 AND 23),
     pickup_day_of_week INTEGER CHECK (pickup_day_of_week BETWEEN 0 AND 6),
     pickup_date DATE,
     is_weekend BOOLEAN,
     time_period VARCHAR(20),
-    
+
     -- Derived speed
     average_speed_mph FLOAT CHECK (average_speed_mph >= 0),
-    distance_category VARCHAR(20), -- short, medium, or long
-    duration_category VARCHAR(20), -- quick, average, or extended
-    
+    distance_category VARCHAR(20),
+    duration_category VARCHAR(20),
+
     -- Metadata
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Indexes for performance optimization
+
+    -- Indexes
     INDEX idx_trips_dropoff_datetime (dropoff_datetime),
     INDEX idx_trips_datetime_vendor_id (pickup_date, vendor_id),
     INDEX idx_trips_pickup_hour (pickup_hour),
@@ -44,7 +44,10 @@ CREATE TABLE nyc_taxi_trips (
     INDEX idx_trips_distance_category (distance_category),
     INDEX idx_trips_duration_category (duration_category),
     INDEX idx_trips_average_speed_mph (average_speed_mph),
-    INDEX idx_trips_trip_distance_duration (trip_distance_miles, trip_duration)
+    INDEX idx_trips_trip_distance_duration (trip_distance_miles, trip_duration),
+
+    -- Foreign key constraint
+    FOREIGN KEY (vendor_id) REFERENCES vendors(vendor_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
