@@ -63,7 +63,7 @@ CREATE TABLE vendors (
 
 -- Sample data for vendors
 INSERT INTO vendors (vendor_id, vendor_name) VALUES 
-('1', 'Vendor-2'),
+('1', 'Vendor-1'),
 ('2', 'Vendor-2');
 
 
