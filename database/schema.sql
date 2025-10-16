@@ -68,9 +68,9 @@ CREATE TABLE nyc_taxi_trips (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- ==============================
+
 -- Trip Statistics Table
--- ==============================
+
 CREATE TABLE trip_statistics (
     stat_id INT AUTO_INCREMENT PRIMARY KEY,
     total_trips INT NOT NULL,
@@ -197,3 +197,27 @@ SELECT
 FROM vendors v
 LEFT JOIN nyc_taxi_trips t ON v.vendor_id = t.vendor_id
 GROUP BY v.vendor_id, v.vendor_name;
+
+-- Relationships Enhancements for Entity Diagram Visualization
+
+-- Link hourly statistics to trips (based on pickup_hour)
+ALTER TABLE hourly_statistics
+ADD CONSTRAINT fk_hourly_pickup_hour
+FOREIGN KEY (pickup_hour)
+REFERENCES nyc_taxi_trips(pickup_hour);
+
+-- Link trip statistics to vendors (if you later compute per-vendor stats)
+-- Optional, but helps in visualizing vendor-level aggregates
+ALTER TABLE trip_statistics
+ADD COLUMN vendor_id VARCHAR(15),
+ADD CONSTRAINT fk_trip_stats_vendor
+FOREIGN KEY (vendor_id)
+REFERENCES vendors(vendor_id);
+
+-- (Optional) Add logical link between trip_statistics and hourly_statistics
+-- This is just for visual structure — not required for computation
+ALTER TABLE hourly_statistics
+ADD COLUMN stat_id INT,
+ADD CONSTRAINT fk_hourly_stat
+FOREIGN KEY (stat_id)
+REFERENCES trip_statistics(stat_id);
