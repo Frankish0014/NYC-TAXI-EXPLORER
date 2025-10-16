@@ -6,7 +6,7 @@ A full-stack application for exploring and analyzing NYC taxi trip patterns
 
 ## Video Walkthrough
 
-**[Link to 5-minute Video Demo]**: [file:///C:/Users/hp/Documents/Zoom/2025-10-16%2015.46.16%20Gloria%20Muhorakeye's%20Zoom%20Meeting/video4619868440/video4619868440.mp4]
+**[Link to 5-minute Video Demo]**: [https://drive.google.com/file/d/1UkEPNFOKYMLsXsvol3SEp7eLCqsi0vaU/view?usp=sharing]
 
 ## Project Overview
 
