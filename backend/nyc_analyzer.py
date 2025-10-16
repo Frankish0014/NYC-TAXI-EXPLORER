@@ -5,7 +5,7 @@ import os
 class NYCTripAnalyzer:
     def __init__(self, db_path=None):
         if db_path is None:
-            self.db_path = os.path.join(os.path.dirname(__file__), '..', 'nyc_taxi.db')
+            self.db_path = os.path.join(os.path.dirname(__file__), '..', 'nyc_taxi_db')
         else:
             self.db_path = db_path
     

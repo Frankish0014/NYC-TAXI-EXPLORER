@@ -1,3 +1,19 @@
-﻿Flask==2.3.3
-Flask-CORS==4.0.0
-python-dotenv==1.0.0
+﻿# Web framework
+Flask==3.1.0
+Flask-CORS==6.0.1
+
+# Environment variables
+python-dotenv==1.1.1
+
+# Data processing
+pandas==2.2.3
+numpy==2.2.3
+
+# Database connectivity
+PyMySQL==1.1.2
+
+# For advanced CSV handling and performance
+pyarrow==19.0.1
+
+# For any future JSON serialization or request handling
+requests==2.32.3
