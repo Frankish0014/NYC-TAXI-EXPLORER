@@ -1,16 +1,30 @@
-
 -- Database schema for NYC Taxi Explorer
 -- This schema defines the structure of the database tables
 -- used to store and analyze NYC taxi trip data.
 
+-- NOTE: Before running this schema, first create a MySQL database:
+-- Example: CREATE DATABASE nyc_taxi_db;
+-- Then run: SOURCE PATH/TO/THE/schema.sql;
 
--- NYC TAXI EXPLORER DATABASE SCHEMA (MySQL)
+-- Vendors Table (Parent)
+CREATE TABLE vendors (
+    vendor_id VARCHAR(15) PRIMARY KEY,
+    vendor_name VARCHAR(100) NOT NULL,
+    total_trips INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Before runing this schema remember to first create a mysql database and you can run SOURCE PATH/TO/THE/schema.sql
--- Main trips table
+-- Sample data for vendors
+INSERT INTO vendors (vendor_id, vendor_name) VALUES 
+('1', 'Vendor-1'),
+('2', 'Vendor-2');
+
+
+-- NYC Taxi Trips Table (Child)
 CREATE TABLE nyc_taxi_trips (
     id VARCHAR(50) PRIMARY KEY,
-    vendor_id VARCHAR(10) NOT NULL,
+    vendor_id VARCHAR(15) NOT NULL,
     dropoff_datetime TIMESTAMP NOT NULL,
     passenger_count INT NOT NULL,
     pickup_longitude FLOAT NOT NULL,
@@ -47,28 +61,16 @@ CREATE TABLE nyc_taxi_trips (
     INDEX idx_trips_trip_distance_duration (trip_distance_miles, trip_duration),
 
     -- Foreign key constraint
-    FOREIGN KEY (vendor_id) REFERENCES vendors(vendor_id)
+    CONSTRAINT fk_vendor_trip FOREIGN KEY (vendor_id)
+        REFERENCES vendors(vendor_id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- Vendor information table
-
-CREATE TABLE vendors (
-    vendor_id VARCHAR(15) PRIMARY KEY,
-    vendor_name VARCHAR(100) NOT NULL,
-    total_trips INT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4; 
-
--- Sample data for vendors
-INSERT INTO vendors (vendor_id, vendor_name) VALUES 
-('1', 'Vendor-1'),
-('2', 'Vendor-2');
-
-
--- Trip statistics table (overall aggregates)
-
+-- ==============================
+-- Trip Statistics Table
+-- ==============================
 CREATE TABLE trip_statistics (
     stat_id INT AUTO_INCREMENT PRIMARY KEY,
     total_trips INT NOT NULL,
@@ -81,8 +83,7 @@ CREATE TABLE trip_statistics (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- Hourly statistics table
-
+--Hourly Statistics Table
 CREATE TABLE hourly_statistics (
     hour_stat_id INT AUTO_INCREMENT PRIMARY KEY,
     pickup_hour INTEGER CHECK (pickup_hour BETWEEN 0 AND 23),
@@ -94,17 +95,18 @@ CREATE TABLE hourly_statistics (
     UNIQUE KEY unique_pickup_hour (pickup_hour)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- VIEWS for common queries
+
+--  VIEWS for Common Queries
 
 -- View: Trips by hour
 CREATE OR REPLACE VIEW trips_by_hour AS
 SELECT 
     pickup_hour,
-    COUNT(*) as trip_count,
-    AVG(trip_duration) as avg_duration_seconds,
-    AVG(trip_distance_miles) as avg_distance_miles,
-    AVG(average_speed_mph) as avg_speed_mph,
-    AVG(passenger_count) as avg_passengers
+    COUNT(*) AS trip_count,
+    AVG(trip_duration) AS avg_duration_seconds,
+    AVG(trip_distance_miles) AS avg_distance_miles,
+    AVG(average_speed_mph) AS avg_speed_mph,
+    AVG(passenger_count) AS avg_passengers
 FROM nyc_taxi_trips
 WHERE pickup_hour IS NOT NULL
 GROUP BY pickup_hour
@@ -122,10 +124,10 @@ SELECT
         WHEN 4 THEN 'Friday'
         WHEN 5 THEN 'Saturday'
         WHEN 6 THEN 'Sunday'
-    END as day_name,
-    COUNT(*) as trip_count,
-    AVG(trip_duration) as avg_duration_seconds,
-    AVG(trip_distance_miles) as avg_distance_miles
+    END AS day_name,
+    COUNT(*) AS trip_count,
+    AVG(trip_duration) AS avg_duration_seconds,
+    AVG(trip_distance_miles) AS avg_distance_miles
 FROM nyc_taxi_trips
 WHERE pickup_day_of_week IS NOT NULL
 GROUP BY pickup_day_of_week
@@ -134,12 +136,12 @@ ORDER BY pickup_day_of_week;
 -- View: Weekend vs Weekday
 CREATE OR REPLACE VIEW weekend_vs_weekday AS
 SELECT 
-    CASE WHEN is_weekend = 1 THEN 'Weekend' ELSE 'Weekday' END as period_type,
-    COUNT(*) as trip_count,
-    AVG(trip_duration) as avg_duration_seconds,
-    AVG(trip_distance_miles) as avg_distance_miles,
-    AVG(passenger_count) as avg_passengers,
-    AVG(average_speed_mph) as avg_speed_mph
+    CASE WHEN is_weekend = 1 THEN 'Weekend' ELSE 'Weekday' END AS period_type,
+    COUNT(*) AS trip_count,
+    AVG(trip_duration) AS avg_duration_seconds,
+    AVG(trip_distance_miles) AS avg_distance_miles,
+    AVG(passenger_count) AS avg_passengers,
+    AVG(average_speed_mph) AS avg_speed_mph
 FROM nyc_taxi_trips
 WHERE is_weekend IS NOT NULL
 GROUP BY is_weekend;
@@ -148,11 +150,11 @@ GROUP BY is_weekend;
 CREATE OR REPLACE VIEW distance_distribution AS
 SELECT 
     distance_category,
-    COUNT(*) as trip_count,
-    AVG(trip_duration) as avg_duration_seconds,
-    AVG(average_speed_mph) as avg_speed_mph,
-    MIN(trip_distance_miles) as min_distance,
-    MAX(trip_distance_miles) as max_distance
+    COUNT(*) AS trip_count,
+    AVG(trip_duration) AS avg_duration_seconds,
+    AVG(average_speed_mph) AS avg_speed_mph,
+    MIN(trip_distance_miles) AS min_distance,
+    MAX(trip_distance_miles) AS max_distance
 FROM nyc_taxi_trips
 WHERE distance_category IS NOT NULL
 GROUP BY distance_category
@@ -167,10 +169,10 @@ ORDER BY
 CREATE OR REPLACE VIEW time_period_analysis AS
 SELECT
     time_period,
-    COUNT(*) as trip_count,
-    AVG(trip_duration) as avg_duration_seconds,
-    AVG(trip_distance_miles) as avg_distance_miles,
-    AVG(passenger_count) as avg_passengers
+    COUNT(*) AS trip_count,
+    AVG(trip_duration) AS avg_duration_seconds,
+    AVG(trip_distance_miles) AS avg_distance_miles,
+    AVG(passenger_count) AS avg_passengers
 FROM nyc_taxi_trips
 WHERE time_period IS NOT NULL
 GROUP BY time_period
@@ -187,11 +189,11 @@ CREATE OR REPLACE VIEW vendor_comparison AS
 SELECT 
     v.vendor_id,
     v.vendor_name,
-    COUNT(t.id) as total_trips,
-    AVG(t.trip_duration) as avg_duration_seconds,
-    AVG(t.trip_distance_miles) as avg_distance_miles,
-    AVG(t.average_speed_mph) as avg_speed_mph,
-    AVG(t.passenger_count) as avg_passengers
+    COUNT(t.id) AS total_trips,
+    AVG(t.trip_duration) AS avg_duration_seconds,
+    AVG(t.trip_distance_miles) AS avg_distance_miles,
+    AVG(t.average_speed_mph) AS avg_speed_mph,
+    AVG(t.passenger_count) AS avg_passengers
 FROM vendors v
 LEFT JOIN nyc_taxi_trips t ON v.vendor_id = t.vendor_id
-GROUP BY v.vendor_id, v.vendor_name; 
+GROUP BY v.vendor_id, v.vendor_name;
