@@ -6,7 +6,7 @@
 
 -- NYC TAXI EXPLORER DATABASE SCHEMA (MySQL)
 
-
+-- Before runing this schema remember to first create a mysql database and you can run SOURCE PATH/TO/THE/schema.sql
 -- Main trips table
 CREATE TABLE nyc_taxi_trips (
     id VARCHAR(50) PRIMARY KEY,
