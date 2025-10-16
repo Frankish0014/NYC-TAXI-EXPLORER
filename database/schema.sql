@@ -199,25 +199,18 @@ LEFT JOIN nyc_taxi_trips t ON v.vendor_id = t.vendor_id
 GROUP BY v.vendor_id, v.vendor_name;
 
 -- Relationships Enhancements for Entity Diagram Visualization
-
--- Link hourly statistics to trips (based on pickup_hour)
-ALTER TABLE hourly_statistics
-ADD CONSTRAINT fk_hourly_pickup_hour
-FOREIGN KEY (pickup_hour)
-REFERENCES nyc_taxi_trips(pickup_hour);
-
--- Link trip statistics to vendors (if you later compute per-vendor stats)
--- Optional, but helps in visualizing vendor-level aggregates
+-- Add a synthetic key to trip_statistics for visualization
 ALTER TABLE trip_statistics
-ADD COLUMN vendor_id VARCHAR(15),
-ADD CONSTRAINT fk_trip_stats_vendor
-FOREIGN KEY (vendor_id)
-REFERENCES vendors(vendor_id);
+ADD UNIQUE KEY unique_stat (stat_id);
 
--- (Optional) Add logical link between trip_statistics and hourly_statistics
--- This is just for visual structure — not required for computation
+-- Add a foreign key from hourly_statistics to trip_statistics (so DataGrip draws the line)
 ALTER TABLE hourly_statistics
-ADD COLUMN stat_id INT,
-ADD CONSTRAINT fk_hourly_stat
-FOREIGN KEY (stat_id)
+ADD COLUMN stat_ref INT,
+ADD CONSTRAINT fk_hourly_to_tripstats
+FOREIGN KEY (stat_ref)
 REFERENCES trip_statistics(stat_id);
+
+-- (Optional) Make pickup_hour unique just for diagram purposes
+-- WARNING: This is only for visualization, not real data integrity
+ALTER TABLE hourly_statistics
+ADD UNIQUE KEY unique_hour (pickup_hour);
