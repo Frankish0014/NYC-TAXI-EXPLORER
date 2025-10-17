@@ -6,7 +6,7 @@ A full-stack application for exploring and analyzing NYC taxi trip patterns
 
 ## Video Walkthrough
 
-**[Link to 5-minute Video Demo]**: [INSERT YOUR VIDEO LINK HERE]
+**[Link to 5-minute Video Demo]**: [https://drive.google.com/file/d/1UkEPNFOKYMLsXsvol3SEp7eLCqsi0vaU/view?usp=sharing]
 
 ## Project Overview
 
