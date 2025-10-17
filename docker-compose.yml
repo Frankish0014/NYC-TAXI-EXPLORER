@@ -14,24 +14,22 @@ services:
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
   backend:
-    depends_on:
-      - nyc_taxi_db
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: ./backend
     container_name: nyc_taxi_backend
     restart: always
     environment:
-      DB_HOST: nyc_taxi_db
-      DB_USER: root
+      DB_HOST: db
+      DB_USER: taxi_user
       DB_PASS: taxi_pass
       DB_NAME: nyc_taxi_db
     ports:
       - "5000:5000"
+    depends_on:
+      - db
 
   frontend:
     build: ./frontend
     container_name: nyc_taxi_frontend
     restart: always
     ports:
-      - "80:90"
+      - "80:80"
