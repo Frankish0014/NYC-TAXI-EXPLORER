@@ -8,9 +8,9 @@ app = Flask(__name__)
 CORS(app)
 
 # MySQL connection configuration (adjust these with your environment variables)
-DB_HOST = os.getenv("MYSQL_HOST", "localhost")
+DB_HOST = os.getenv("MYSQL_HOST", "nyc_taxi_db")
 DB_USER = os.getenv("MYSQL_USER", "root")
-DB_PASSWORD = os.getenv("MYSQL_PASSWORD", "password")
+DB_PASSWORD = os.getenv("MYSQL_PASSWORD", '')
 DB_NAME = os.getenv("MYSQL_DATABASE", "nyc_taxi_db")
 DB_PORT = int(os.getenv("MYSQL_PORT", 3306))
 
