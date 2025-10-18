@@ -6,7 +6,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: nyc_taxi_db
-      MYSQL_USER: root
+      MYSQL_USER: frank
       MYSQL_PASSWORD: taxi_pass
     ports:
       - "3306:3306"
@@ -19,7 +19,7 @@ services:
     restart: always
     environment:
       DB_HOST: db
-      DB_USER: root
+      DB_USER: frank
       DB_PASS: taxi_pass
       DB_NAME: nyc_taxi_db
     ports:
