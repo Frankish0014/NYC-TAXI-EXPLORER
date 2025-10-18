@@ -16,7 +16,7 @@ DB_CONFIG = {
     'host': os.getenv('DB_HOST', 'localhost'),
     'port': int(os.getenv('DB_PORT', 3306)),
     'database': os.getenv('DB_NAME', 'nyc_taxi_db'),
-    'user': os.getenv('DB_USER', 'root'),
+    'user': os.getenv('DB_USER', 'frank'),
     'password': os.getenv('DB_PASSWORD', '')
 }
 
@@ -67,9 +67,9 @@ def calculate_speed(distance_miles, duration_seconds):
     # Cap unrealistic speeds (likely data errors)
     return min(speed, 120.0)
 
-# ============================================
+
 # DATA PREPARATION
-# ============================================
+
 
 def prepare_data(df):
     """Prepare dataframe with derived features"""
@@ -77,10 +77,7 @@ def prepare_data(df):
     
     initial_count = len(df)
     
-    # CRITICAL: Rename columns to match schema
-    # Schema expects: pickup_date (DATETIME)
-    # Your CSV might have: dropoff_datetime or tpep_dropoff_datetime
-    
+    # Schema expects: pickup_date (DATETIME) 
     # Handle different possible column names
     if 'tpep_dropoff_datetime' in df.columns:
         df['dropoff_datetime'] = pd.to_datetime(df['tpep_dropoff_datetime'], errors='coerce')
@@ -166,9 +163,9 @@ def prepare_data(df):
     ]
     
     if len(df) < before_filter:
-        print(f"⚠️  Filtered out {before_filter - len(df)} rows with invalid data")
+        print(f" Filtered out {before_filter - len(df)} rows with invalid data")
     
-    print(f"✅ Prepared {len(df):,} records (from {initial_count:,} original)")
+    print(f"Prepared {len(df):,} records (from {initial_count:,} original)")
     return df
 
 # DATABASE OPERATIONS
@@ -378,9 +375,8 @@ def verify_data_load():
 # MAIN EXECUTION
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("🚕 NYC TAXI DATA LOADER")
-    print("=" * 60)
+    
+    print("NYC TAXI DATA LOADER")
     
     # Check for CSV file
     data_path = os.getenv('CSV_FILE_PATH', 'data/raw/processed/cleaned_data.csv')
