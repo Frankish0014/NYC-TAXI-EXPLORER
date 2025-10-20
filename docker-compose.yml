@@ -3,11 +3,8 @@ services:
     image: mysql:8.0
     container_name: nyc_taxi_db
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: nyc_taxi_db
-      MYSQL_USER: frank
-      MYSQL_PASSWORD: taxi_pass
+    env_file:
+      - .env
     ports:
       - "3306:3306"
     volumes:
@@ -17,11 +14,8 @@ services:
     build: ./backend
     container_name: nyc_taxi_backend
     restart: always
-    environment:
-      DB_HOST: db
-      DB_USER: frank
-      DB_PASS: taxi_pass
-      DB_NAME: nyc_taxi_db
+    env_file:
+      - .env
     ports:
       - "5000:5000"
     depends_on:

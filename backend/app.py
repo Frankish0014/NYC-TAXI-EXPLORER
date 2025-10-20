@@ -38,7 +38,47 @@ def handle_errors(f):
             return jsonify({"error": str(e)}), 500
     return decorated_function
 
-# HEALTH CHECK
+# ROOT & BASIC ENDPOINTS
+
+@app.route('/', methods=['GET'])
+def root():
+    """Root endpoint - API information"""
+    return jsonify({
+        "name": "NYC Taxi API",
+        "version": "1.0.0",
+        "status": "running",
+        "endpoints": {
+            "health": "/api/health",
+            "stats": "/api/stats",
+            "trips": "/api/trips",
+            "vendors": "/api/vendors",
+            "insights": "/api/insights/*"
+        }
+    })
+
+@app.route('/health', methods=['GET'])
+def health():
+    """Simple health check without DB"""
+    return jsonify({"status": "healthy"})
+
+@app.route('/status', methods=['GET'])
+def status():
+    """Status endpoint"""
+    return jsonify({
+        "status": "running",
+        "timestamp": datetime.now().isoformat()
+    })
+
+@app.route('/api', methods=['GET'])
+def api_root():
+    """API root endpoint"""
+    return jsonify({
+        "message": "NYC Taxi API",
+        "version": "1.0.0",
+        "documentation": "/api/health for health check"
+    })
+
+# HEALTH CHECK WITH DB
 
 @app.route('/api/health', methods=['GET'])
 @handle_errors
@@ -59,7 +99,7 @@ def health_check():
 @app.route('/api/stats', methods=['GET'])
 @handle_errors
 def get_stats():
-    """Get overall statistics - FIXED to return km/h and km"""
+    """Get overall statistics - Returns km/h and km"""
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -70,7 +110,9 @@ def get_stats():
     cursor.execute('''
         SELECT 
             AVG(average_speed_mph * 1.60934) as avg_speed_kmh,
-            AVG(trip_distance_miles * 1.60934) as avg_distance_km
+            AVG(trip_distance_miles * 1.60934) as avg_distance_km,
+            MAX(trip_distance_miles * 1.60934) as max_distance_km,
+            MIN(trip_distance_miles * 1.60934) as min_distance_km
         FROM nyc_taxi_trips
     ''')
     stats = cursor.fetchone()
@@ -80,7 +122,9 @@ def get_stats():
     return jsonify({
         "total_rows": total_rows,
         "avg_speed_kmh": round(stats['avg_speed_kmh'], 2) if stats['avg_speed_kmh'] else 0,
-        "avg_distance_km": round(stats['avg_distance_km'], 2) if stats['avg_distance_km'] else 0
+        "avg_distance_km": round(stats['avg_distance_km'], 2) if stats['avg_distance_km'] else 0,
+        "max_distance_km": round(stats['max_distance_km'], 2) if stats['max_distance_km'] else 0,
+        "min_distance_km": round(stats['min_distance_km'], 2) if stats['min_distance_km'] else 0
     })
 
 @app.route('/api/summary', methods=['GET'])
@@ -133,7 +177,8 @@ def get_hourly_insights():
     cursor.execute('''
         SELECT 
             pickup_hour,
-            COUNT(*) as trips
+            COUNT(*) as trips,
+            AVG(average_speed_mph * 1.60934) as avg_speed_kmh
         FROM nyc_taxi_trips
         WHERE pickup_hour IS NOT NULL
         GROUP BY pickup_hour
@@ -142,6 +187,11 @@ def get_hourly_insights():
     
     results = cursor.fetchall()
     conn.close()
+    
+    # Format results
+    for row in results:
+        if row.get('avg_speed_kmh'):
+            row['avg_speed_kmh'] = round(row['avg_speed_kmh'], 2)
     
     return jsonify(results)
 
@@ -166,9 +216,12 @@ def get_weekday_speed():
     results = cursor.fetchall()
     conn.close()
     
-    # Format results
+    # Format results with day names
+    day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     for row in results:
         row['avg_speed_kmh'] = round(row['avg_speed_kmh'], 2) if row['avg_speed_kmh'] else 0
+        if 0 <= row['pickup_day_of_week'] <= 6:
+            row['day_name'] = day_names[row['pickup_day_of_week']]
     
     return jsonify(results)
 
@@ -183,6 +236,7 @@ def get_slow_hours():
         SELECT 
             pickup_hour,
             AVG(trip_duration / (trip_distance_miles * 1.60934)) as avg_sec_per_km,
+            AVG(average_speed_mph * 1.60934) as avg_speed_kmh,
             COUNT(*) as trips
         FROM nyc_taxi_trips
         WHERE pickup_hour IS NOT NULL 
@@ -197,6 +251,7 @@ def get_slow_hours():
     # Format results
     for row in results:
         row['avg_sec_per_km'] = round(row['avg_sec_per_km'], 2) if row['avg_sec_per_km'] else 0
+        row['avg_speed_kmh'] = round(row['avg_speed_kmh'], 2) if row['avg_speed_kmh'] else 0
     
     return jsonify(results)
 
@@ -211,15 +266,14 @@ def get_nearby_trips():
         page = int(request.args.get('page', 1))
         page_size = int(request.args.get('pageSize', 100))
     except (TypeError, ValueError):
-        return jsonify({"error": "Invalid parameters"}), 400
+        return jsonify({"error": "Invalid parameters. Required: lat, lon"}), 400
     
     offset = (page - 1) * page_size
     
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Haversine formula for distance calculation
-    # Result in meters
+    # Haversine formula for distance calculation (result in meters)
     cursor.execute('''
         SELECT 
             id,
@@ -230,9 +284,11 @@ def get_nearby_trips():
             average_speed_mph * 1.60934 as speed_kmh,
             (
                 6371000 * acos(
-                    cos(radians(%s)) * cos(radians(pickup_latitude)) * 
-                    cos(radians(pickup_longitude) - radians(%s)) + 
-                    sin(radians(%s)) * sin(radians(pickup_latitude))
+                    LEAST(1.0, GREATEST(-1.0,
+                        cos(radians(%s)) * cos(radians(pickup_latitude)) * 
+                        cos(radians(pickup_longitude) - radians(%s)) + 
+                        sin(radians(%s)) * sin(radians(pickup_latitude))
+                    ))
                 )
             ) as meters_away
         FROM nyc_taxi_trips
@@ -250,9 +306,11 @@ def get_nearby_trips():
             SELECT 
                 (
                     6371000 * acos(
-                        cos(radians(%s)) * cos(radians(pickup_latitude)) * 
-                        cos(radians(pickup_longitude) - radians(%s)) + 
-                        sin(radians(%s)) * sin(radians(pickup_latitude))
+                        LEAST(1.0, GREATEST(-1.0,
+                            cos(radians(%s)) * cos(radians(pickup_latitude)) * 
+                            cos(radians(pickup_longitude) - radians(%s)) + 
+                            sin(radians(%s)) * sin(radians(pickup_latitude))
+                        ))
                     )
                 ) as meters_away
             FROM nyc_taxi_trips
@@ -263,10 +321,13 @@ def get_nearby_trips():
     total = cursor.fetchone()['total']
     conn.close()
     
-    # Format datetime fields
+    # Format results
     for trip in trips:
         if trip.get('pickup_datetime'):
             trip['pickup_datetime'] = str(trip['pickup_datetime'])
+        trip['distance_km'] = round(trip['distance_km'], 2) if trip['distance_km'] else 0
+        trip['speed_kmh'] = round(trip['speed_kmh'], 2) if trip['speed_kmh'] else 0
+        trip['meters_away'] = round(trip['meters_away'], 2)
     
     return jsonify({
         "page": page,
@@ -284,6 +345,9 @@ def get_trips():
     # Pagination
     page = request.args.get('page', 1, type=int)
     page_size = request.args.get('pageSize', 20, type=int)
+    
+    # Limit page size
+    page_size = min(page_size, 1000)
     offset = (page - 1) * page_size
     
     # Sorting
@@ -297,7 +361,7 @@ def get_trips():
     # Validate sort field (prevent SQL injection)
     valid_sort_fields = [
         'pickup_date', 'dropoff_datetime', 'trip_distance_miles',
-        'trip_duration', 'average_speed_mph', 'passenger_count'
+        'trip_duration', 'average_speed_mph', 'passenger_count', 'id'
     ]
     if sort_by not in valid_sort_fields:
         sort_by = 'pickup_date'
@@ -341,6 +405,19 @@ def get_trips():
         filters.append('average_speed_mph <= %s')
         params.append(max_speed_mph)
     
+    # Distance filters
+    min_distance = request.args.get('minDistance')
+    if min_distance:
+        min_distance_miles = float(min_distance) / 1.60934
+        filters.append('trip_distance_miles >= %s')
+        params.append(min_distance_miles)
+    
+    max_distance = request.args.get('maxDistance')
+    if max_distance:
+        max_distance_miles = float(max_distance) / 1.60934
+        filters.append('trip_distance_miles <= %s')
+        params.append(max_distance_miles)
+    
     # Bounding box filter
     bbox = request.args.get('bbox')
     if bbox:
@@ -382,6 +459,7 @@ def get_trips():
             duration_category,
             time_period, 
             pickup_day_of_week, 
+            pickup_hour,
             is_weekend
         FROM nyc_taxi_trips
         {where_clause}
@@ -417,10 +495,11 @@ def get_trips():
         "page": page,
         "pageSize": page_size,
         "total": total,
+        "totalPages": (total + page_size - 1) // page_size,
         "data": trips
     })
 
-@app.route('/api/trips/<trip_id>', methods=['GET'])
+@app.route('/api/trips/<int:trip_id>', methods=['GET'])
 @handle_errors
 def get_trip(trip_id):
     """Get a single trip by ID"""
@@ -444,6 +523,7 @@ def get_trip(trip_id):
             duration_category,
             time_period, 
             pickup_day_of_week, 
+            pickup_hour,
             is_weekend
         FROM nyc_taxi_trips 
         WHERE id = %s
@@ -498,7 +578,38 @@ def get_vendor_stats():
     
     return jsonify({"vendors": vendors})
 
+# ERROR HANDLERS
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        "error": "Not Found",
+        "message": "The requested endpoint does not exist",
+        "available_endpoints": [
+            "/",
+            "/health",
+            "/status", 
+            "/api",
+            "/api/health",
+            "/api/stats",
+            "/api/trips",
+            "/api/vendors"
+        ]
+    }), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({
+        "error": "Internal Server Error",
+        "message": "An unexpected error occurred"
+    }), 500
+
 # RUN SERVER
 if __name__ == '__main__':
+    print("=" * 50)
+    print("NYC Taxi API Server Starting...")
+    print(f"Database: {DB_HOST}:{DB_PORT}/{DB_NAME}")
+    print(f"Server: http://0.0.0.0:5000")
+    print("=" * 50)
     app.run(debug=True, host='0.0.0.0', port=5000)
     

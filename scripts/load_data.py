@@ -268,15 +268,15 @@ def update_statistics():
         cursor = conn.cursor()
         
         # Update vendor statistics
-        print("  ↻ Updating vendor statistics...")
+        print(" Updating vendor statistics...")
         cursor.callproc('update_vendor_counts')
         
         # Update hourly statistics
-        print("  ↻ Updating hourly statistics...")
+        print(" Updating hourly statistics...")
         cursor.callproc('update_hourly_statistics')
         
         # Update trip statistics
-        print("  ↻ Updating trip statistics...")
+        print(" Updating trip statistics...")
         cursor.execute("TRUNCATE TABLE trip_statistics")
         cursor.execute("""
             INSERT INTO trip_statistics (
@@ -409,9 +409,9 @@ if __name__ == "__main__":
         print("\n[5/5] Verifying data...")
         verify_data_load()
         
-        print("\n" + "=" * 60)
+
         print("DATA LOADING COMPLETE!")
-        print("=" * 60)
+
         
     except KeyboardInterrupt:
         print("\n\n Operation cancelled by user")
