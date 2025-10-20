@@ -9,11 +9,11 @@ app = Flask(__name__)
 CORS(app)
 
 # MySQL connection configuration
-DB_HOST = os.getenv("MYSQL_HOST", "localhost")
-DB_USER = os.getenv("MYSQL_USER", "root")
-DB_PASSWORD = os.getenv("MYSQL_PASSWORD", "")
-DB_NAME = os.getenv("MYSQL_DATABASE", "nyc_taxi_db")
-DB_PORT = int(os.getenv("MYSQL_PORT", 3306))
+DB_HOST = os.getenv("MYSQL_HOST", os.getenv("DB_HOST", "localhost"))
+DB_USER = os.getenv("MYSQL_USER", os.getenv("DB_USER", "root"))
+DB_PASSWORD = os.getenv("MYSQL_PASSWORD", os.getenv("DB_PASSWORD", ""))
+DB_NAME = os.getenv("MYSQL_DATABASE", os.getenv("DB_NAME", "nyc_taxi_db"))
+DB_PORT = int(os.getenv("MYSQL_PORT", os.getenv("DB_PORT", 3306)))
 
 def get_db_connection():
     """Create and return a MySQL database connection"""
@@ -612,4 +612,3 @@ if __name__ == '__main__':
     print(f"Server: http://0.0.0.0:5000")
     print("=" * 50)
     app.run(debug=True, host='0.0.0.0', port=5000)
-    
