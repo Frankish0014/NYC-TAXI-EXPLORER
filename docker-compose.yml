@@ -16,7 +16,7 @@ services:
       - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${DB_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,17 +26,20 @@ services:
     container_name: nyc_taxi_backend
     restart: always
     environment:
-      MYSQL_HOST: ${DB_HOST}
+      MYSQL_HOST: mysql
       MYSQL_PORT: 3306
       MYSQL_USER: ${DB_USER}
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_NAME}
       FLASK_ENV: ${FLASK_ENV}
+      CSV_FILE_PATH: ${CSV_FILE_PATH}
     ports:
       - "5000:5000"
     depends_on:
       mysql:
         condition: service_healthy
+    volumes:
+      - ./data:/app/data
     command: python app.py
 
   frontend:
