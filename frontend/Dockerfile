@@ -1,8 +1,8 @@
 # Use official Nginx image
 FROM nginx:alpine
 
-# # Remove default Nginx static files
-# RUN rm -rf /usr/share/nginx/html/*
+# Remove default Nginx static files
+RUN rm -rf /usr/share/nginx/html/*
 
 # Copy frontend files to Nginx
 COPY . /usr/share/nginx/html

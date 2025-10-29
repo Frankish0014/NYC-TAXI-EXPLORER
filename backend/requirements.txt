@@ -17,3 +17,4 @@ pyarrow==19.0.1
 
 # For any future JSON serialization or request handling
 requests==2.32.3
+cryptography
