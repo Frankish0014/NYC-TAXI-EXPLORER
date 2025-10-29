@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000'; // adjust if backend runs elsewhere
+const API_BASE = '/api';
 
 // DOM
 const el = (id)=>document.getElementById(id);
